@@ -6,129 +6,97 @@
     <meta name="theme-color" content="#b91c1c" />
     <link rel="manifest" href="./manifest.json" />
     <title>Lista de Ramais - Barra Mansa</title>
+    
+    <!-- Scripts Necessários -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Compilador para rodar TSX no navegador (Essencial para GitHub Pages) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            colors: {
-              primary: '#b91c1c', 
-              secondary: '#1f2937',
-            }
+            fontFamily: { sans: ['Inter', 'sans-serif'] },
+            colors: { primary: '#b91c1c', secondary: '#1f2937' }
           }
         }
       }
     </script>
-    <style>
-      body { background-color: #111827; margin: 0; min-height: 100vh; }
-      .animate-fade-in { animation: fadeIn 0.2s ease-out; }
-      @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-      
-      #local-warning {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: #111827;
-        color: white;
-        padding: 40px;
-        text-align: center;
-        font-family: sans-serif;
-      }
 
-      /* Tela de carregamento inicial */
+    <style>
+      body { background-color: #111827; margin: 0; min-height: 100vh; color: white; }
       #loading-screen {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #111827;
-        z-index: 50;
-        transition: opacity 0.5s ease-out;
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; background-color: #111827;
+        z-index: 50; transition: opacity 0.5s ease-out;
       }
       .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(255,255,255,0.1);
-        border-left-color: #ef4444;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: #ef4444; border-radius: 50%; animation: spin 1s linear infinite;
       }
       @keyframes spin { to { transform: rotate(360deg); } }
+      #error-console { 
+        display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; 
+        background: #991b1b; color: white; padding: 15px; border-radius: 8px; 
+        font-family: monospace; font-size: 12px; z-index: 100;
+      }
     </style>
-  <script type="importmap">
+
+    <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
   <body>
-    <!-- Aviso para quem abre o arquivo clicando 2x no Windows -->
-    <div id="local-warning">
-      <div style="max-width: 600px; margin: 0 auto; background: #1f2937; padding: 30px; border-radius: 12px; border: 1px solid #374151;">
-        <h1 style="color: #ef4444; font-size: 24px; margin-bottom: 20px;">⚠️ Sistema não pode ser aberto localmente</h1>
-        <p style="margin-bottom: 20px; line-height: 1.6; color: #d1d5db;">
-          O navegador bloqueia scripts quando você abre o arquivo direto da pasta.
-        </p>
-        <div style="text-align: left; background: #111827; padding: 20px; border-radius: 8px; font-size: 14px; color: #9ca3af;">
-          <p><strong>Para usar agora:</strong></p>
-          <ol style="margin-top: 10px; padding-left: 20px;">
-            <li>Acesse o link que você criou no <strong>GitHub Pages</strong>.</li>
-            <li>No navegador (Chrome/Edge), clique no ícone de instalar na barra de endereços.</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tela de Carregamento -->
     <div id="loading-screen">
       <div class="spinner"></div>
-      <p style="color: white; font-family: sans-serif; margin-top: 20px; font-size: 14px; letter-spacing: 1px;">CARREGANDO RAMAIS...</p>
+      <p style="font-family: sans-serif; margin-top: 20px; font-size: 14px;">INICIANDO SISTEMA...</p>
     </div>
 
+    <div id="error-console"></div>
     <div id="root"></div>
 
-    <!-- PONTO DE ENTRADA DO SISTEMA - CRUCIAL PARA FUNCIONAR -->
-    <script type="module" src="./index.tsx"></script>
+    <!-- Carrega o index.tsx usando o tradutor Babel -->
+    <script type="text/babel" data-type="module" data-presets="typescript,react" src="./index.tsx"></script>
 
     <script>
-      // Verifica se está rodando via arquivo local (file://)
-      if (window.location.protocol === 'file:') {
-        document.getElementById('local-warning').style.display = 'flex';
-        document.getElementById('local-warning').style.alignItems = 'center';
-        document.getElementById('loading-screen').style.display = 'none';
-      }
+      // Captura erros para ajudar no diagnóstico
+      window.onerror = function(msg, url, line) {
+        const console = document.getElementById('error-console');
+        console.style.display = 'block';
+        console.innerHTML = `ERRO: ${msg} <br> Local: ${url} (Linha ${line})`;
+        return false;
+      };
 
-      // Registro do Service Worker para PWA
+      // Service Worker para PWA
       if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA: Ativo'))
-            .catch(err => console.error('PWA: Erro', err));
+          navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .then(() => console.log('PWA Pronto'))
+            .catch(err => console.error('Erro PWA:', err));
         });
       }
 
-      // Remove a tela de carregamento quando o React assumir o controle
-      window.addEventListener('DOMContentLoaded', () => {
+      // Remove loading após renderizar
+      window.addEventListener('load', () => {
         setTimeout(() => {
           const loader = document.getElementById('loading-screen');
           if (loader) {
             loader.style.opacity = '0';
             setTimeout(() => loader.remove(), 500);
           }
-        }, 1000);
+        }, 2000);
       });
     </script>
   <script type="module" src="/index.tsx"></script>

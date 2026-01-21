@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#b91c1c" />
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <title>Lista de Ramais - Barra Mansa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
       }
     </script>
     <style>
-      body { background-color: #111827; margin: 0; }
+      body { background-color: #111827; margin: 0; min-height: 100vh; }
       .animate-fade-in { animation: fadeIn 0.2s ease-out; }
       @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
       
@@ -39,6 +39,28 @@
         text-align: center;
         font-family: sans-serif;
       }
+
+      /* Tela de carregamento inicial */
+      #loading-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #111827;
+        z-index: 50;
+        transition: opacity 0.5s ease-out;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: #ef4444;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   <script type="importmap">
 {
@@ -53,40 +75,61 @@
 <link rel="stylesheet" href="/index.css">
 </head>
   <body>
+    <!-- Aviso para quem abre o arquivo clicando 2x no Windows -->
     <div id="local-warning">
       <div style="max-width: 600px; margin: 0 auto; background: #1f2937; padding: 30px; border-radius: 12px; border: 1px solid #374151;">
         <h1 style="color: #ef4444; font-size: 24px; margin-bottom: 20px;">⚠️ Sistema não pode ser aberto localmente</h1>
         <p style="margin-bottom: 20px; line-height: 1.6; color: #d1d5db;">
-          Você tentou abrir o arquivo diretamente da pasta. Por segurança, navegadores bloqueiam o carregamento de scripts desta forma.
+          O navegador bloqueia scripts quando você abre o arquivo direto da pasta.
         </p>
         <div style="text-align: left; background: #111827; padding: 20px; border-radius: 8px; font-size: 14px; color: #9ca3af;">
-          <p><strong>Para funcionar em vários PCs:</strong></p>
+          <p><strong>Para usar agora:</strong></p>
           <ol style="margin-top: 10px; padding-left: 20px;">
-            <li>Hospede estes arquivos em um servidor (Intranet) ou serviço web (GitHub Pages, Netlify, Vercel).</li>
-            <li>Acesse o link gerado pelo Google Chrome ou Edge.</li>
-            <li>O botão <strong>"Instalar App"</strong> aparecerá no topo do sistema.</li>
+            <li>Acesse o link que você criou no <strong>GitHub Pages</strong>.</li>
+            <li>No navegador (Chrome/Edge), clique no ícone de instalar na barra de endereços.</li>
           </ol>
         </div>
-        <p style="margin-top: 20px; font-size: 13px; color: #6b7280;">Dúvidas? Entre em contato com o suporte de TI.</p>
       </div>
+    </div>
+
+    <!-- Tela de Carregamento -->
+    <div id="loading-screen">
+      <div class="spinner"></div>
+      <p style="color: white; font-family: sans-serif; margin-top: 20px; font-size: 14px; letter-spacing: 1px;">CARREGANDO RAMAIS...</p>
     </div>
 
     <div id="root"></div>
 
+    <!-- PONTO DE ENTRADA DO SISTEMA - CRUCIAL PARA FUNCIONAR -->
+    <script type="module" src="./index.tsx"></script>
+
     <script>
-      // Verifica se está rodando via arquivo local
+      // Verifica se está rodando via arquivo local (file://)
       if (window.location.protocol === 'file:') {
         document.getElementById('local-warning').style.display = 'flex';
         document.getElementById('local-warning').style.alignItems = 'center';
+        document.getElementById('loading-screen').style.display = 'none';
       }
 
+      // Registro do Service Worker para PWA
       if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA: Service Worker registrado'))
-            .catch(err => console.log('PWA: Erro SW', err));
+            .then(reg => console.log('PWA: Ativo'))
+            .catch(err => console.error('PWA: Erro', err));
         });
       }
+
+      // Remove a tela de carregamento quando o React assumir o controle
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const loader = document.getElementById('loading-screen');
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+          }
+        }, 1000);
+      });
     </script>
   <script type="module" src="/index.tsx"></script>
 </body>

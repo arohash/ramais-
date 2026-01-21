@@ -7,11 +7,11 @@
     <link rel="manifest" href="./manifest.json" />
     <title>Lista de Ramais - Barra Mansa</title>
     
-    <!-- Scripts Necessários -->
+    <!-- Scripts Base -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Compilador para rodar TSX no navegador (Essencial para GitHub Pages) -->
+    <!-- Tradutor Babel (Essencial para ler .tsx no GitHub Pages) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
@@ -26,7 +26,7 @@
     </script>
 
     <style>
-      body { background-color: #111827; margin: 0; min-height: 100vh; color: white; }
+      body { background-color: #111827; margin: 0; min-height: 100vh; color: white; overflow-x: hidden; }
       #loading-screen {
         position: fixed; inset: 0; display: flex; flex-direction: column;
         align-items: center; justify-content: center; background-color: #111827;
@@ -38,19 +38,20 @@
       }
       @keyframes spin { to { transform: rotate(360deg); } }
       #error-console { 
-        display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; 
-        background: #991b1b; color: white; padding: 15px; border-radius: 8px; 
-        font-family: monospace; font-size: 12px; z-index: 100;
+        display: none; position: fixed; top: 20px; left: 20px; right: 20px; 
+        background: #991b1b; color: white; padding: 20px; border-radius: 8px; 
+        font-family: monospace; font-size: 13px; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        border: 2px solid #ef4444;
       }
     </style>
 
     <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
@@ -61,43 +62,70 @@
   <body>
     <div id="loading-screen">
       <div class="spinner"></div>
-      <p style="font-family: sans-serif; margin-top: 20px; font-size: 14px;">INICIANDO SISTEMA...</p>
+      <p style="font-family: sans-serif; margin-top: 20px; font-size: 14px; color: #9ca3af;">CARREGANDO SISTEMA...</p>
     </div>
 
-    <div id="error-console"></div>
+    <div id="error-console">
+      <h3 style="margin: 0 0 10px 0; font-weight: bold;">⚠️ Erro de Carregamento</h3>
+      <div id="error-message"></div>
+      <button onclick="location.reload()" style="margin-top: 15px; background: white; color: #991b1b; padding: 5px 15px; border-radius: 4px; font-weight: bold; border: none; cursor: pointer;">Tentar Novamente</button>
+    </div>
+
     <div id="root"></div>
 
-    <!-- Carrega o index.tsx usando o tradutor Babel -->
-    <script type="text/babel" data-type="module" data-presets="typescript,react" src="./index.tsx"></script>
+    <!-- Script de Inicialização via Babel -->
+    <script type="text/babel" data-presets="typescript,react">
+      import React from 'react';
+      import ReactDOM from 'react-dom/client';
+      import App from './App.tsx';
+
+      try {
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+          const root = ReactDOM.createRoot(rootElement);
+          root.render(
+            <React.StrictMode>
+              <App />
+            </React.StrictMode>
+          );
+          // Remove o loader após o React renderizar
+          setTimeout(() => {
+            const loader = document.getElementById('loading-screen');
+            if (loader) {
+              loader.style.opacity = '0';
+              setTimeout(() => loader.remove(), 500);
+            }
+          }, 500);
+        }
+      } catch (err) {
+        console.error("Erro na renderização:", err);
+        document.getElementById('error-console').style.display = 'block';
+        document.getElementById('error-message').innerText = err.message;
+      }
+    </script>
 
     <script>
-      // Captura erros para ajudar no diagnóstico
+      // Captura erros globais (MIME Type, Rede, etc)
       window.onerror = function(msg, url, line) {
-        const console = document.getElementById('error-console');
-        console.style.display = 'block';
-        console.innerHTML = `ERRO: ${msg} <br> Local: ${url} (Linha ${line})`;
+        if (msg.includes('MIME type')) {
+          console.warn("Aviso de MIME type detectado. O Babel deve contornar isso automaticamente.");
+          return false;
+        }
+        const consoleEl = document.getElementById('error-console');
+        const msgEl = document.getElementById('error-message');
+        consoleEl.style.display = 'block';
+        msgEl.innerHTML = `${msg} <br><small>Linha: ${line}</small>`;
         return false;
       };
 
-      // Service Worker para PWA
+      // Service Worker (Cache)
       if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js', { scope: './' })
-            .then(() => console.log('PWA Pronto'))
-            .catch(err => console.error('Erro PWA:', err));
+          navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('Offline ok'))
+            .catch(err => console.log('Erro cache:', err));
         });
       }
-
-      // Remove loading após renderizar
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const loader = document.getElementById('loading-screen');
-          if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.remove(), 500);
-          }
-        }, 2000);
-      });
     </script>
   <script type="module" src="/index.tsx"></script>
 </body>

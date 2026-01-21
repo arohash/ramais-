@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ramais-bm-v3';
+const CACHE_NAME = 'ramais-barra-mansa-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -7,7 +7,9 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(keys.map(key => caches.delete(key)));
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
     })
   );
 });

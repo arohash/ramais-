@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#b91c1c" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Lista de Ramais - Barra Mansa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: '#b91c1c', 
+              secondary: '#1f2937',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { background-color: #111827; margin: 0; }
+      .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      
+      #local-warning {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #111827;
+        color: white;
+        padding: 40px;
+        text-align: center;
+        font-family: sans-serif;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="local-warning">
+      <div style="max-width: 600px; margin: 0 auto; background: #1f2937; padding: 30px; border-radius: 12px; border: 1px solid #374151;">
+        <h1 style="color: #ef4444; font-size: 24px; margin-bottom: 20px;">⚠️ Sistema não pode ser aberto localmente</h1>
+        <p style="margin-bottom: 20px; line-height: 1.6; color: #d1d5db;">
+          Você tentou abrir o arquivo diretamente da pasta. Por segurança, navegadores bloqueiam o carregamento de scripts desta forma.
+        </p>
+        <div style="text-align: left; background: #111827; padding: 20px; border-radius: 8px; font-size: 14px; color: #9ca3af;">
+          <p><strong>Para funcionar em vários PCs:</strong></p>
+          <ol style="margin-top: 10px; padding-left: 20px;">
+            <li>Hospede estes arquivos em um servidor (Intranet) ou serviço web (GitHub Pages, Netlify, Vercel).</li>
+            <li>Acesse o link gerado pelo Google Chrome ou Edge.</li>
+            <li>O botão <strong>"Instalar App"</strong> aparecerá no topo do sistema.</li>
+          </ol>
+        </div>
+        <p style="margin-top: 20px; font-size: 13px; color: #6b7280;">Dúvidas? Entre em contato com o suporte de TI.</p>
+      </div>
+    </div>
+
+    <div id="root"></div>
+
+    <script>
+      // Verifica se está rodando via arquivo local
+      if (window.location.protocol === 'file:') {
+        document.getElementById('local-warning').style.display = 'flex';
+        document.getElementById('local-warning').style.alignItems = 'center';
+      }
+
+      if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA: Service Worker registrado'))
+            .catch(err => console.log('PWA: Erro SW', err));
+        });
+      }
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

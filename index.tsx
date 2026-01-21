@@ -1,3 +1,13 @@
-// Arquivo mantido apenas para referência. 
-// A inicialização agora ocorre via Babel no index.html para compatibilidade com GitHub Pages.
-console.log('Módulo de ramais pronto.');
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}

@@ -10,6 +10,4 @@ if (rootElement) {
       <App />
     </React.StrictMode>
   );
-} else {
-  console.error("Erro: Elemento root não encontrado.");
 }
